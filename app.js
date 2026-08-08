@@ -540,6 +540,13 @@ async function fetchShipmentFromCloud(trackingNum) {
 }
 
 async function syncAllShipmentsFromCloud() {
+    // 1. Back up all locally stored packages to the cloud database on startup
+    if (Array.isArray(shipments)) {
+        for (const shipment of shipments) {
+            saveShipmentToCloud(shipment);
+        }
+    }
+
     try {
         const res = await fetch(`https://kvdb.io/${CLOUD_BUCKET}/`);
         if (res.status === 200) {
