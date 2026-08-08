@@ -963,8 +963,6 @@ function closeTermsModal() {
 
 // Staff Portal Authentication Functions
 function openLoginModal() {
-    // Default modal view is sign-in tab
-    switchAuthTab('signin');
     const modal = document.getElementById('loginModal');
     if (modal) modal.classList.add('active');
 }
@@ -973,30 +971,24 @@ function closeLoginModal() {
     const modal = document.getElementById('loginModal');
     if (modal) modal.classList.remove('active');
     
-    // Reset login & register form fields
+    // Reset login form fields
     const loginForm = document.getElementById('adminLoginForm');
     if (loginForm) loginForm.reset();
-    const regForm = document.getElementById('adminRegisterForm');
-    if (regForm) regForm.reset();
 }
 
-function switchAuthTab(tab) {
-    const signinForm = document.getElementById('adminLoginForm');
-    const registerForm = document.getElementById('adminRegisterForm');
-    const tabSignIn = document.getElementById('tabSignIn');
-    const tabRegister = document.getElementById('tabRegister');
+// Agent Registration Modal Actions (Dashboard restricted)
+function openRegisterModal() {
+    const modal = document.getElementById('registerModal');
+    if (modal) modal.classList.add('active');
+}
 
-    if (tab === 'signin') {
-        if (signinForm) signinForm.style.display = 'block';
-        if (registerForm) registerForm.style.display = 'none';
-        if (tabSignIn) tabSignIn.classList.add('active');
-        if (tabRegister) tabRegister.classList.remove('active');
-    } else {
-        if (signinForm) signinForm.style.display = 'none';
-        if (registerForm) registerForm.style.display = 'block';
-        if (tabSignIn) tabSignIn.classList.remove('active');
-        if (tabRegister) tabRegister.classList.add('active');
-    }
+function closeRegisterModal() {
+    const modal = document.getElementById('registerModal');
+    if (modal) modal.classList.remove('active');
+    
+    // Reset register form fields
+    const regForm = document.getElementById('adminRegisterForm');
+    if (regForm) regForm.reset();
 }
 
 function handleAdminRegister(event) {
@@ -1024,8 +1016,8 @@ function handleAdminRegister(event) {
     staffDb.push({ username: user, passcode: pass });
     localStorage.setItem('fedex_staff_credentials', JSON.stringify(staffDb));
 
-    showToast("Staff account created successfully! Please sign in.", "success");
-    switchAuthTab('signin');
+    showToast(`New Agent "${user}" registered successfully!`, "success");
+    closeRegisterModal();
 }
 
 function handleAdminLogin(event) {

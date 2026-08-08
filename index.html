@@ -349,15 +349,24 @@
                 </div>
 
                 <div class="glass-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap: wrap; gap: 1rem;">
                         <h2 class="form-title" style="border:none; margin:0; padding:0;">Sub-Delivery <span>Shipment Hub</span></h2>
-                        <div class="search-container" style="margin:0; width: 300px;">
-                            <form id="trackingSearchForm">
-                                <div class="search-box-wrapper" style="padding: 0.2rem 0.5rem; border-radius: 10px;">
-                                    <input type="text" id="trackingSearchInput" class="search-input" style="padding: 0.4rem 0.5rem; font-size: 0.9rem;" placeholder="Search Tracking No..." required>
-                                    <button type="submit" class="search-btn" style="padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.85rem;">Find</button>
-                                </div>
-                            </form>
+                        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                            <button class="btn-primary" onclick="openRegisterModal()" style="padding: 0.5rem 1rem; font-size: 0.85rem; background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%); border-color: rgba(255, 255, 255, 0.1); box-shadow: 0 4px 15px var(--secondary-glow); border-radius: 10px; display: flex; align-items: center; gap: 0.5rem;">
+                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0Zm-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
+                                    <path d="M8.256 14a4.474 4.474 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10c.26 0 .507.009.74.025.226-.341.496-.65.804-.918C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4s1 1 1 1h5.256Z"/>
+                                </svg>
+                                Register New Agent
+                            </button>
+                            <div class="search-container" style="margin:0; width: 250px;">
+                                <form id="trackingSearchForm">
+                                    <div class="search-box-wrapper" style="padding: 0.2rem 0.5rem; border-radius: 10px;">
+                                        <input type="text" id="trackingSearchInput" class="search-input" style="padding: 0.4rem 0.5rem; font-size: 0.9rem;" placeholder="Search Tracking No..." required>
+                                        <button type="submit" class="search-btn" style="padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.85rem;">Find</button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
 
@@ -536,12 +545,6 @@
                     <button class="close-btn" onclick="closeLoginModal()">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <!-- Auth Tabs -->
-                    <div style="display: flex; gap: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.8rem; margin-bottom: 1.5rem;">
-                        <button type="button" class="nav-btn active" id="tabSignIn" onclick="switchAuthTab('signin')" style="padding: 0.4rem 1rem; font-size: 0.9rem; border-radius: 10px; flex: 1;">Sign In</button>
-                        <button type="button" class="nav-btn" id="tabRegister" onclick="switchAuthTab('register')" style="padding: 0.4rem 1rem; font-size: 0.9rem; border-radius: 10px; flex: 1;">Register Agent</button>
-                    </div>
-
                     <!-- Sign In Form -->
                     <form id="adminLoginForm">
                         <div class="form-column">
@@ -559,9 +562,19 @@
                             </div>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
 
-                    <!-- Register Form -->
-                    <form id="adminRegisterForm" style="display: none;">
+        <!-- ADMIN REGISTER AGENT MODAL (ACCESSIBLE ONLY BY ADMIN FROM DASHBOARD) -->
+        <div id="registerModal" class="modal-overlay">
+            <div class="modal-card" style="max-width: 420px;">
+                <div class="modal-header" style="background: linear-gradient(135deg, var(--secondary) 0%, rgba(60, 20, 0, 0.8) 100%);">
+                    <h3 class="modal-title">Register New FedEx Agent</h3>
+                    <button class="close-btn" onclick="closeRegisterModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="adminRegisterForm">
                         <div class="form-column">
                             <div class="form-group">
                                 <label for="regUser">New Agent Username *</label>
@@ -580,7 +593,7 @@
                                 <br><span style="color: var(--secondary-light); font-family: monospace; font-weight: 600;">Username: fedex_admin | Passcode: fedex2026</span>
                             </div>
                             <div class="form-footer" style="border:none; margin:0; padding:0; display:flex; justify-content:flex-end; gap:1rem;">
-                                <button type="button" class="btn-secondary" onclick="closeLoginModal()">Cancel</button>
+                                <button type="button" class="btn-secondary" onclick="closeRegisterModal()">Cancel</button>
                                 <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%); border-color: rgba(255, 255, 255, 0.1); box-shadow: 0 4px 15px var(--secondary-glow);">
                                     Create Agent Account
                                 </button>
