@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FedEx Sub-Delivery & Tracking Portal</title>
+    <!-- Custom styling -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- Leaflet.js for interactive mapping -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Main Header -->
+        <header>
+            <div class="header-content">
+                <div class="logo-container" onclick="document.querySelector('[data-target=\'tracking-portal\']').click()">
+                    <div class="logo-text">
+                        <span class="logo-purple">Fed</span><span class="logo-orange">Ex</span>
+                        <span class="logo-tagline">Sub-Delivery</span>
+                    </div>
+                </div>
+                <nav>
+                    <button class="nav-btn active" data-target="tracking-portal">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                        </svg>
+                        Track Package
+                    </button>
+                    <button class="nav-btn" data-target="create-portal">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                        </svg>
+                        Issue Label
+                    </button>
+                    <button class="nav-btn admin-btn" data-target="manage-portal">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M1 2.828c.885-.37 2.154-.768 3.5-.768 1.34 0 2.61.398 3.5.768.892-.37 2.161-.768 3.5-.768 1.34 0 2.61.398 3.5.768V1.3a5.03 5.03 0 0 0-3.5-.767c-1.34 0-2.61.398-3.5.767-1.34-.37-2.61-.767-3.5-.767A5.03 5.03 0 0 0 0 1.3v11.52c0 .07.06.127.131.127.022 0 .044-.006.065-.017l1.025-.51a.75.75 0 0 1 .69-.026l1.93.965c.9.45 2.099.45 2.999 0l1.93-.965a.75.75 0 0 1 .69.026l1.93.965c.9.45 2.099.45 2.999 0l1.025-.51A.127.127 0 0 0 16 12.82V1.3a5.03 5.03 0 0 0-3.5-.767c-1.34 0-2.61.398-3.5.767-1.34-.37-2.61-.767-3.5-.767A5.03 5.03 0 0 0 1 1.3v1.528z"/>
+                        </svg>
+                        Sub-Agent Dashboard
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Panel Contents -->
+        <main>
+            <!-- 1. CUSTOMER TRACKING PORTAL -->
+            <section id="tracking-portal" class="view-panel active">
+                <!-- Hero section with FedEx truck image background -->
+                <div class="hero-section" style="background-image: linear-gradient(rgba(11, 8, 19, 0.78), rgba(11, 8, 19, 0.95)), url('fedex_delivery_truck.jpg'); background-size: cover; background-position: center; border-radius: 24px; border: 1px solid var(--border-color); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+                    <span class="hero-badge">FedEx Sub-Delivery Network</span>
+                    <h1 class="hero-title">Track Your Shipment</h1>
+                    <p class="hero-subtitle">Enter your sub-delivery tracking number to view real-time transit checkpoints and delivery progress details.</p>
+                    
+                    <div class="search-container">
+                        <form id="heroSearchForm">
+                            <div class="search-box-wrapper">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" id="heroSearchInput" class="search-input" placeholder="e.g. FDX-2026-0808-1001" required>
+                                <button type="submit" class="search-btn">Track Shipment</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Welcome Screen / Search Prompt -->
+                <div id="trackingWelcomeMsg" style="text-align: center; padding: 3rem 0; color: var(--text-muted);">
+                    <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16" style="margin-bottom: 1rem; opacity: 0.3;">
+                        <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5v-7zm1.294 7.456A1.999 1.999 0 0 1 4.732 11h5.536a2.01 2.01 0 0 1 .732-.732V3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .294.456zM12 10a2 2 0 0 1 1.732-1h.768a.5.5 0 0 0 .5-.5V8.35a.5.5 0 0 0-.11-.312l-1.48-1.85A.5.5 0 0 0 13.02 6H12v4zm-9 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm9 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                    </svg>
+                    <p style="font-size: 1.1rem;">Enter a valid sub-delivery tracking number to view shipment status.</p>
+                </div>
+
+                <!-- Tracking Results Dashboard -->
+                <div id="trackingResultsContainer" class="tracking-results-layout" style="display: none;">
+                    
+                    <!-- Left: Details & Timeline -->
+                    <div class="tracking-main-card">
+                        <div class="glass-card">
+                            <div class="tracking-header-info">
+                                <div>
+                                    <div class="tracking-num-tag">Tracking Number</div>
+                                    <div class="tracking-num-val" id="displayTrackingNum">---</div>
+                                </div>
+                                <div id="displayStatusBadge" class="status-badge">---</div>
+                            </div>
+
+                            <div class="shipment-meta-grid" style="margin: 1.5rem 0;">
+                                <div class="meta-item">
+                                    <span class="meta-label">Service Type</span>
+                                    <span class="meta-value" id="displayServiceType">---</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Weight</span>
+                                    <span class="meta-value" id="displayWeight">---</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Declared Value</span>
+                                    <span class="meta-value" id="displayValue">---</span>
+                                </div>
+                            </div>
+
+                            <div class="shipment-meta-grid" style="margin-bottom: 2rem;">
+                                <div class="meta-item">
+                                    <span class="meta-label">Dimensions</span>
+                                    <span class="meta-value" id="displayDimensions">---</span>
+                                </div>
+                                <div class="meta-item" style="grid-column: span 2;">
+                                    <span class="meta-label">Content Description</span>
+                                    <span class="meta-value" id="displayDescription">---</span>
+                                </div>
+                            </div>
+
+                            <!-- Progress Track Bar -->
+                            <div class="progress-bar-container">
+                                <div class="progress-track">
+                                    <div id="progressFill" class="progress-fill"></div>
+                                </div>
+                                <div class="progress-nodes">
+                                    <div class="progress-node" id="node-created"><span class="node-label">Created</span></div>
+                                    <div class="progress-node" id="node-pickup"><span class="node-label">Picked Up</span></div>
+                                    <div class="progress-node" id="node-transit"><span class="node-label">In Transit</span></div>
+                                    <div class="progress-node" id="node-out"><span class="node-label">Out for Delivery</span></div>
+                                    <div class="progress-node" id="node-delivered"><span class="node-label">Delivered</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Est Banner & Timeline checkpoints -->
+                        <div class="glass-card">
+                            <div id="estimatedDeliveryBanner" style="border-left: 4px solid var(--secondary); padding-left: 1rem; margin-bottom: 2rem;">
+                                <h3>Estimated Delivery</h3>
+                                <p>Calculating coordinates and transit schedules...</p>
+                            </div>
+
+                            <div class="timeline-card">
+                                <div class="timeline-title">
+                                    <span>Transit Checkpoint Logs</span>
+                                    <span class="timeline-count" id="timelineHeaderCount">0</span>
+                                </div>
+                                <div id="timelineCheckpointsList" class="timeline-list">
+                                    <!-- Rendered dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Live Map & Details -->
+                    <div class="form-column">
+                        <div class="glass-card map-card">
+                            <div class="map-header">
+                                <h3 style="font-weight: 700;">Live Transit Route</h3>
+                                <span style="font-size: 0.8rem; color: var(--success); display: flex; align-items: center; gap: 0.3rem;">
+                                    <span style="display:inline-block; width:8px; height:8px; background:var(--success); border-radius:50%; animation: markerPulse 1.5s infinite;"></span>
+                                    Live tracking active
+                                </span>
+                            </div>
+                            <div id="trackingMap" class="map-container"></div>
+                        </div>
+
+                        <div class="glass-card">
+                            <h3 style="font-weight: 700; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Shipment Addresses</h3>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                                <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                                    <div style="background: rgba(77, 20, 140, 0.1); color: var(--primary-light); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">S</div>
+                                    <div>
+                                        <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Sender Address</div>
+                                        <div style="font-weight: 700; color: #FFF; margin-top: 0.15rem;" id="displaySenderName">---</div>
+                                        <div style="color: var(--text-secondary); font-size: 0.9rem;" id="displaySenderAddress">---</div>
+                                    </div>
+                                </div>
+
+                                <div style="border-left: 2px dashed var(--border-color); height: 20px; margin-left: 18px;"></div>
+
+                                <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                                    <div style="background: rgba(255, 98, 0, 0.1); color: var(--secondary-light); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">R</div>
+                                    <div>
+                                        <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Recipient Address</div>
+                                        <div style="font-weight: 700; color: #FFF; margin-top: 0.15rem;" id="displayRecipientName">---</div>
+                                        <div style="color: var(--text-secondary); font-size: 0.9rem;" id="displayRecipientAddress">---</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- 2. CREATE SHIPMENT PORTAL -->
+            <section id="create-portal" class="view-panel">
+                <div class="glass-card">
+                    <h2 class="form-title" style="margin-bottom: 2rem;">Issue Sub-Delivery <span>Shipping Label</span></h2>
+                    
+                    <form id="createShipmentForm">
+                        <div class="form-layout">
+                            
+                            <!-- Sender Column -->
+                            <div class="form-column">
+                                <h3 class="form-title" style="font-size: 1.1rem; border-bottom: 1px dashed var(--border-color); padding-bottom: 0.3rem;">Sender Details</h3>
+                                
+                                <div class="form-group">
+                                    <label for="sName">Full Name / Company *</label>
+                                    <input type="text" id="sName" placeholder="e.g. Acme Corporation" required>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="sPhone">Phone Number</label>
+                                        <input type="tel" id="sPhone" placeholder="e.g. +1 (555) 0199">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="sEmail">Email Address</label>
+                                        <input type="email" id="sEmail" placeholder="e.g. contact@acme.com">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="sAddress">Street Address *</label>
+                                    <input type="text" id="sAddress" placeholder="e.g. 123 Industrial Pkwy" required>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="sCity">City, Country *</label>
+                                        <input type="text" id="sCity" placeholder="e.g. Paris, France or New York, NY" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="sZip">Postal / Zip Code *</label>
+                                        <input type="text" id="sZip" placeholder="e.g. 95110 or SW1A 1AA" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Recipient Column -->
+                            <div class="form-column">
+                                <h3 class="form-title" style="font-size: 1.1rem; border-bottom: 1px dashed var(--border-color); padding-bottom: 0.3rem;">Recipient Details</h3>
+                                
+                                <div class="form-group">
+                                    <label for="rName">Recipient Name *</label>
+                                    <input type="text" id="rName" placeholder="e.g. Jane Doe" required>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="rPhone">Phone Number</label>
+                                        <input type="tel" id="rPhone" placeholder="e.g. +1 (555) 0143">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="rEmail">Email Address</label>
+                                        <input type="email" id="rEmail" placeholder="e.g. jane.doe@email.com">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="rAddress">Delivery Street Address *</label>
+                                    <input type="text" id="rAddress" placeholder="e.g. 456 Elm Street, Suite 4B" required>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="rCity">City, Country *</label>
+                                        <input type="text" id="rCity" placeholder="e.g. Tokyo, Japan or London, UK" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="rZip">Postal / Zip Code *</label>
+                                        <input type="text" id="rZip" placeholder="e.g. 60611 or EC1A 1BB" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Package Specs (Span full layout) -->
+                            <div class="form-footer" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-top: 1rem; width: 100%;">
+                                <div class="form-group">
+                                    <label for="pkgService">FedEx Service Class</label>
+                                    <select id="pkgService">
+                                        <option value="FedEx Priority Overnight">FedEx Priority Overnight</option>
+                                        <option value="FedEx Standard Overnight">FedEx Standard Overnight</option>
+                                        <option value="FedEx 2Day">FedEx 2Day</option>
+                                        <option value="FedEx Ground">FedEx Ground</option>
+                                        <option value="FedEx Home Delivery">FedEx Home Delivery</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pkgWeight">Package Weight (lbs) *</label>
+                                    <input type="number" id="pkgWeight" step="0.1" min="0.1" placeholder="e.g. 5.5" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pkgDims">Package Dimensions (L x W x H in)</label>
+                                    <input type="text" id="pkgDims" placeholder="e.g. 12x10x8">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pkgValue">Declared Value ($ USD)</label>
+                                    <input type="number" id="pkgValue" step="0.01" min="0" placeholder="e.g. 150.00">
+                                </div>
+                                <div class="form-group" style="grid-column: span 2;">
+                                    <label for="pkgDesc">Content Description</label>
+                                    <input type="text" id="pkgDesc" placeholder="e.g. Fragile electronic equipment">
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="form-footer" style="grid-column: span 2; display: flex; justify-content: flex-end; gap: 1rem; width: 100%;">
+                                <button type="reset" class="btn-secondary">Clear Fields</button>
+                                <button type="submit" class="btn-primary">
+                                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.707-6.707z"/>
+                                    </svg>
+                                    Issue Tracking & Label
+                                </button>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- 3. MANAGE SHIPMENTS PORTAL -->
+            <section id="manage-portal" class="view-panel">
+                <!-- Summary Stats Widgets -->
+                <div class="widgets-grid">
+                    <div class="widget-card">
+                        <span class="widget-label">Total Shipments</span>
+                        <div class="widget-value" id="wTotalShipments">0</div>
+                        <span class="widget-trend trend-up">▲ 100% active database</span>
+                    </div>
+                    <div class="widget-card">
+                        <span class="widget-label">In Transit</span>
+                        <div class="widget-value" id="wInTransit">0</div>
+                        <span class="widget-trend" style="color: var(--warning);">⚡ Dispatched couriers</span>
+                    </div>
+                    <div class="widget-card">
+                        <span class="widget-label">Delivered</span>
+                        <div class="widget-value" id="wDelivered">0</div>
+                        <span class="widget-trend trend-up">✓ Completed route</span>
+                    </div>
+                    <div class="widget-card">
+                        <span class="widget-label">Pending Pickup</span>
+                        <div class="widget-value" id="wPending">0</div>
+                        <span class="widget-trend" style="color: var(--text-muted);">⏱ Awaiting scan</span>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                        <h2 class="form-title" style="border:none; margin:0; padding:0;">Sub-Delivery <span>Shipment Hub</span></h2>
+                        <div class="search-container" style="margin:0; width: 300px;">
+                            <form id="trackingSearchForm">
+                                <div class="search-box-wrapper" style="padding: 0.2rem 0.5rem; border-radius: 10px;">
+                                    <input type="text" id="trackingSearchInput" class="search-input" style="padding: 0.4rem 0.5rem; font-size: 0.9rem;" placeholder="Search Tracking No..." required>
+                                    <button type="submit" class="search-btn" style="padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.85rem;">Find</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Tracking Number</th>
+                                    <th>Sender</th>
+                                    <th>Recipient</th>
+                                    <th>Current Status</th>
+                                    <th>Service Class</th>
+                                    <th>Weight</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="manageShipmentsTableBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- PRINTABLE LABEL MODAL -->
+        <div id="labelModal" class="modal-overlay">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3 class="modal-title">Shipping Label Issued</h3>
+                    <button class="close-btn" onclick="closeLabelModal()">&times;</button>
+                </div>
+                <div class="modal-body" style="background: #1C1929;">
+                    
+                    <!-- High-Res printable Label container -->
+                    <div class="label-container" id="printableLabel">
+                        <div class="label-header">
+                            <div class="label-logo"><span class="label-logo-purple">Fed</span><span class="label-logo-orange">Ex</span></div>
+                            <div class="label-service-type" id="lblServiceType">FedEx Ground</div>
+                        </div>
+                        
+                        <div class="label-addresses">
+                            <div class="address-block">
+                                <div class="address-title">FROM (SENDER):</div>
+                                <div id="lblSenderName" style="font-weight: 700;">Fifth Ave Boutique</div>
+                                <div id="lblSenderAddress">123 Fashion Blvd</div>
+                                <div id="lblSenderCityStateZip">New York, NY 10022</div>
+                            </div>
+                            <div class="address-block">
+                                <div class="address-title">TO (RECIPIENT):</div>
+                                <div id="lblRecipientName" style="font-weight: 700;">Sarah Jenkins</div>
+                                <div id="lblRecipientAddress">456 Oak Dr, Apt 2C</div>
+                                <div id="lblRecipientCityStateZip">Seattle, WA 98101</div>
+                            </div>
+                        </div>
+
+                        <div class="label-tracking">
+                            <div id="lblBarcodeContainer">
+                                <!-- Barcode lines rendered as SVG here -->
+                            </div>
+                            <div class="label-tracking-number" id="lblTrackingNum">FDX-XXXX-XXXX-XXXX</div>
+                        </div>
+
+                        <div class="label-footer">
+                            <div class="label-info-block">
+                                <div>Weight: <span class="label-info-val" id="lblWeight">2.5 lbs</span></div>
+                                <div>Dims: <span class="label-info-val" id="lblDims">12" x 10" x 6"</span></div>
+                                <div>Declared Val: <span class="label-info-val" id="lblValue">$150.00</span></div>
+                            </div>
+                            <div style="text-align: right; display: flex; flex-direction: column; justify-content: flex-end;">
+                                <div>Date: <span class="label-info-val" id="lblDate">--/--/----</span></div>
+                                <div style="font-size: 0.65rem; text-transform: uppercase; font-weight: bold; margin-top: 0.2rem;">FedEx Sub-Agent Auth</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="print-actions">
+                        <button class="btn-secondary" onclick="closeLabelModal()">Close</button>
+                        <button class="btn-primary" id="printLabelBtn">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+                            </svg>
+                            Print Label
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- TRANSIT UPDATE CHECKPOINT MODAL -->
+        <div id="updateModal" class="modal-overlay">
+            <div class="modal-card">
+                <div class="modal-header" style="background: linear-gradient(135deg, var(--secondary) 0%, rgba(60, 20, 0, 0.8) 100%);">
+                    <h3 class="modal-title">Add Transit Checkpoint</h3>
+                    <button class="close-btn" onclick="closeUpdateModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div style="margin-bottom: 1.5rem; font-size: 0.95rem;">
+                        Updating Package: <span style="font-family: monospace; font-weight: 700; color: var(--secondary-light);" id="updateTrackNumDisplay">FDX-XXXX</span>
+                    </div>
+
+                    <form id="transitUpdateForm">
+                        <div class="form-column">
+                            <div class="form-group">
+                                <label for="updateStatus">Transit Status Stage</label>
+                                <select id="updateStatus">
+                                    <option value="created">Label Created (Ready for Pickup)</option>
+                                    <option value="pickup">Picked Up (In Origin Facility)</option>
+                                    <option value="transit">In Transit (Intermediary Facility)</option>
+                                    <option value="out_for_delivery">Out for Delivery (On Courier Truck)</option>
+                                    <option value="delivered">Delivered (Final Destination)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="updateLocation">Current Checkpoint City/Country (e.g. London, UK) *</label>
+                                <input type="text" id="updateLocation" placeholder="e.g. Paris, France or Memphis, TN" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="updateDetails">Checkpoint Details & Activity Description</label>
+                                <textarea id="updateDetails" rows="3" placeholder="e.g. Package arrived at Memphis sorting facility. Outbound scan completed."></textarea>
+                            </div>
+
+                            <div class="form-footer" style="border:none; margin:0; padding:0; display:flex; justify-content:flex-end; gap:1rem;">
+                                <button type="button" class="btn-secondary" onclick="closeUpdateModal()">Cancel</button>
+                                <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%); box-shadow: 0 5px 15px var(--secondary-glow);">
+                                    Post Checkpoint Update
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- TERMS OF SERVICE MODAL -->
+        <div id="termsModal" class="modal-overlay">
+            <div class="modal-card" style="max-width: 650px;">
+                <div class="modal-header">
+                    <h3 class="modal-title">FedEx Sub-Delivery Terms of Service</h3>
+                    <button class="close-btn" onclick="closeTermsModal()">&times;</button>
+                </div>
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto; text-align: left; font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary);">
+                    <h4 style="color: #FFF; margin-bottom: 0.5rem; font-size: 1.1rem;">1. Acceptance of Terms</h4>
+                    <p style="margin-bottom: 1.2rem;">By using the FedEx Sub-Delivery and Tracking Portal ("Portal") or issuing tracking labels under this network, you agree to comply with and be bound by these Terms of Service. This Portal is authorized for sub-delivery agents and customers checking shipment tracking details.</p>
+
+                    <h4 style="color: #FFF; margin-bottom: 0.5rem; font-size: 1.1rem;">2. Scope of Service & Global Operations</h4>
+                    <p style="margin-bottom: 1.2rem;">The Portal provides sub-delivery registration, barcode and shipping label generation, and worldwide tracking updates. While services cover global routes, packages are subject to standard international customs, local postal checkpoints, import/export restrictions, and international carrier handovers.</p>
+
+                    <h4 style="color: #FFF; margin-bottom: 0.5rem; font-size: 1.1rem;">3. Tracking Data & Estimated Deliveries</h4>
+                    <p style="margin-bottom: 1.2rem;">All tracking updates, transit timelines, and location markers displayed on the map are based on local checkpoint scans uploaded by sub-agents. Delivery timeframes are estimations and are not guaranteed, as they may be affected by customs clearance, weather, global air traffic, or terminal delays.</p>
+
+                    <h4 style="color: #FFF; margin-bottom: 0.5rem; font-size: 1.1rem;">4. Shipping Labels & Declarations</h4>
+                    <p style="margin-bottom: 1.2rem;">Users issuing shipping labels must ensure all sender and recipient details are accurate and complete. Declared values and descriptions must accurately represent the package contents. Prohibited items, hazardous materials, and unregistered dangerous goods are strictly banned from dispatch.</p>
+
+                    <h4 style="color: #FFF; margin-bottom: 0.5rem; font-size: 1.1rem;">5. Privacy and Security</h4>
+                    <p style="margin-bottom: 1.2rem;">Shipper and recipient personal details (names, addresses, emails, phone numbers) are processed securely in accordance with global data protection standards. Tracking numbers should only be shared with authorized recipients.</p>
+
+                    <h4 style="color: #FFF; margin-bottom: 0.5rem; font-size: 1.1rem;">6. Limitation of Liability</h4>
+                    <p style="margin-bottom: 1.2rem;">The FedEx Sub-Delivery network and its authorized sub-agents shall not be liable for any indirect, incidental, or consequential damages resulting from delayed, misplaced, or customs-held international shipments.</p>
+                    
+                    <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 1.5rem;">
+                        <button type="button" class="btn-primary" onclick="closeTermsModal()">I Understand & Accept</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-content">
+                <div>
+                    <span style="font-weight: 800; color: #FFF;"><span class="logo-purple">Fed</span><span class="logo-orange">Ex</span> Sub-Delivery Portal</span>
+                    <p style="font-size: 0.75rem; margin-top: 0.3rem;">Authorized sub-agent network interface. FedEx branding used for simulation purposes.</p>
+                </div>
+                <div class="footer-links">
+                    <a href="#" onclick="openTermsModal(); return false;">Terms</a>
+                    <a href="#" onclick="alert('Simulation Privacy Policy'); return false;">Privacy</a>
+                    <a href="#" onclick="alert('Authorized Sub-delivery Personnel Only'); return false;">Security</a>
+                </div>
+                <div>
+                    © 2026 FedEx Sub-Delivery Project. All rights reserved.
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Core App Logic -->
+    <script src="app.js"></script>
+</body>
+</html>
