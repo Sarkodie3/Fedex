@@ -623,14 +623,24 @@ async function performTrackingSearch(trackingNum) {
     let displayDescription = shipment.description || 'N/A';
     let displayValue = shipment.declaredValue || 'N/A';
 
+    // Check if customer already verified the ZIP for this shipment
+    const isZipVerified = sessionStorage.getItem('verified_zip_' + cleanedNum) === 'true';
+    const zipBox = document.getElementById('zipVerificationBox');
+
     // If client is a general customer (non-staff) searching for a custom-created package, show anonymized mock data instead
-    if (!isStaff && isSpecialShipment) {
+    if (!isStaff && isSpecialShipment && !isZipVerified) {
         displaySenderName = 'FedEx Logistics Hub';
         displaySenderAddress = 'Anonymized Origin Facility, ' + shipment.senderCity;
         displayRecipientName = 'Authorized Consignee';
         displayRecipientAddress = 'Anonymized Destination Facility, ' + shipment.recipientCity;
         displayDescription = 'Secure Sealed Cargo (Protected Class)';
         displayValue = 'Protected Value';
+        
+        // Show verification input
+        if (zipBox) zipBox.style.display = 'block';
+    } else {
+        // Hide verification input if staff or already verified
+        if (zipBox) zipBox.style.display = 'none';
     }
 
     // Update Text Elements
@@ -1336,5 +1346,34 @@ function checkAdminAuthState() {
         if (trackTab && !trackTab.classList.contains('active')) {
             trackTab.classList.add('active');
         }
+    }
+}
+
+// Customer-side ZIP code verification handler
+function handleZipVerification() {
+    const inputVal = document.getElementById('verifyZipInput').value.trim().toUpperCase();
+    if (!inputVal) {
+        showToast("Please enter a ZIP/Postal Code.", "error");
+        return;
+    }
+
+    if (!currentTrackedNum) return;
+    
+    const shipment = shipments.find(s => s.trackingNumber.toUpperCase() === currentTrackedNum.toUpperCase());
+    if (!shipment) {
+        showToast("Error locating current shipment details.", "error");
+        return;
+    }
+
+    // Compare with the recipient's ZIP code in database (case & spaces stripped)
+    const targetZip = shipment.recipientZip.trim().toUpperCase().replace(/\s+/g, '');
+    const cleanInput = inputVal.replace(/\s+/g, '');
+
+    if (cleanInput === targetZip) {
+        sessionStorage.setItem('verified_zip_' + currentTrackedNum.toUpperCase(), 'true');
+        showToast("Shipment details unlocked successfully!", "success");
+        performTrackingSearch(currentTrackedNum); // Refresh results to render un-anonymized data
+    } else {
+        showToast("Incorrect ZIP/Postal Code. Verification failed.", "error");
     }
 }

@@ -96,6 +96,19 @@
                                 </div>
                                 <div id="displayStatusBadge" class="status-badge">---</div>
                             </div>
+                            
+                            <!-- ZIP Verification Box for Customer Authentication -->
+                            <div id="zipVerificationBox" style="display: none; background: rgba(255, 98, 0, 0.06); border: 1px solid rgba(255, 98, 0, 0.2); padding: 1rem; border-radius: 12px; margin: 1.2rem 0;">
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <div style="font-size: 0.8rem; font-weight: 600; color: var(--secondary-light);">
+                                        🔒 Verify Recipient ZIP Code to unlock full details:
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem; width: 100%;">
+                                        <input type="text" id="verifyZipInput" placeholder="Enter ZIP/Postal Code" style="flex: 1; padding: 0.4rem 0.8rem; font-size: 0.9rem; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: #fff;">
+                                        <button type="button" class="btn-primary" onclick="handleZipVerification()" style="padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.85rem; background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);">Verify</button>
+                                    </div>
+                                </div>
+                            </div>
 
                             <div class="shipment-meta-grid" style="margin: 1.5rem 0;">
                                 <div class="meta-item">
