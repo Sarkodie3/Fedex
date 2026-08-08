@@ -161,6 +161,7 @@ let leafletMap = null;
 let mapMarkers = [];
 let routeLine = null;
 let currentManagedTrackingNum = null;
+let currentTrackedNum = null; // Track current customer search to enable auto-refresh updates
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
@@ -234,6 +235,10 @@ function setupNavigation() {
             if (targetId === 'manage-portal') {
                 renderManageDashboard();
                 updateDashboardWidgets();
+            } else if (targetId === 'tracking-portal') {
+                if (currentTrackedNum) {
+                    performTrackingSearch(currentTrackedNum);
+                }
             }
         });
     });
@@ -522,6 +527,8 @@ function performTrackingSearch(trackingNum) {
         if (welcomeMsg) welcomeMsg.style.display = 'block';
         return;
     }
+
+    currentTrackedNum = cleanedNum; // Set the current tracked number for auto-refresh updates
 
     if (welcomeMsg) welcomeMsg.style.display = 'none';
     if (resultsContainer) resultsContainer.style.display = 'grid';
@@ -1062,6 +1069,11 @@ function handleTransitUpdate(event) {
     // Re-render
     renderManageDashboard();
     updateDashboardWidgets();
+
+    // Auto-update customer tracking panel if it was displaying the modified shipment
+    if (currentTrackedNum === currentManagedTrackingNum) {
+        performTrackingSearch(currentTrackedNum);
+    }
 
     // Reset update inputs
     document.getElementById('updateLocation').value = '';
