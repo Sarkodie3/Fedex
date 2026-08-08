@@ -168,6 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupNavigation();
     setupForms();
     updateDashboardWidgets();
+    checkAdminAuthState();
     
     // Default search to show something beautiful on load
     const searchInput = document.getElementById('trackingSearchInput');
@@ -269,6 +270,12 @@ function setupForms() {
     const updateForm = document.getElementById('transitUpdateForm');
     if (updateForm) {
         updateForm.addEventListener('submit', handleTransitUpdate);
+    }
+
+    // Admin Login form
+    const loginForm = document.getElementById('adminLoginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleAdminLogin);
     }
 }
 
@@ -935,4 +942,78 @@ function openTermsModal() {
 function closeTermsModal() {
     const modal = document.getElementById('termsModal');
     if (modal) modal.classList.remove('active');
+}
+
+// Staff Portal Authentication Functions
+function openLoginModal() {
+    const modal = document.getElementById('loginModal');
+    if (modal) modal.classList.add('active');
+}
+
+function closeLoginModal() {
+    const modal = document.getElementById('loginModal');
+    if (modal) modal.classList.remove('active');
+    
+    // Reset login form fields
+    const loginForm = document.getElementById('adminLoginForm');
+    if (loginForm) loginForm.reset();
+}
+
+function handleAdminLogin(event) {
+    event.preventDefault();
+    const user = document.getElementById('loginUser').value.trim();
+    const pass = document.getElementById('loginPass').value.trim();
+
+    // Default simulation credentials
+    if (user === 'fedex_admin' && pass === 'fedex2026') {
+        sessionStorage.setItem('fedex_admin_logged_in', 'true');
+        showToast("Authenticated successfully. Access granted.", "success");
+        checkAdminAuthState();
+        closeLoginModal();
+    } else {
+        showToast("Invalid credentials. Please try again.", "error");
+    }
+}
+
+// Function to handle agent logout
+function handleLogout() {
+    sessionStorage.removeItem('fedex_admin_logged_in');
+    showToast("Logged out of Staff Portal.", "info");
+    
+    // If the active view is an admin view, force back to customer tracking portal
+    const activePanel = document.querySelector('.view-panel.active');
+    if (activePanel && (activePanel.id === 'create-portal' || activePanel.id === 'manage-portal')) {
+        document.querySelector('[data-target="tracking-portal"]').click();
+    }
+    
+    checkAdminAuthState();
+}
+
+// Core admin auth toggler for navigation items
+function checkAdminAuthState() {
+    const isLoggedIn = sessionStorage.getItem('fedex_admin_logged_in') === 'true';
+    const adminButtons = document.querySelectorAll('.admin-only');
+    const loginBtn = document.getElementById('loginNavBtn');
+    const logoutBtn = document.getElementById('logoutNavBtn');
+
+    if (isLoggedIn) {
+        adminButtons.forEach(btn => {
+            btn.style.display = 'flex';
+        });
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'flex';
+    } else {
+        adminButtons.forEach(btn => {
+            btn.style.display = 'none';
+            btn.classList.remove('active');
+        });
+        if (loginBtn) loginBtn.style.display = 'flex';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+        
+        // Reset active nav tab state if admin tab is active
+        const trackTab = document.querySelector('[data-target="tracking-portal"]');
+        if (trackTab && !trackTab.classList.contains('active')) {
+            trackTab.classList.add('active');
+        }
+    }
 }
