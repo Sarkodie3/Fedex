@@ -41,12 +41,6 @@
                         </svg>
                         Sub-Agent Dashboard
                     </button>
-                    <button class="nav-btn admin-btn" id="loginNavBtn" onclick="openLoginModal()">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
-                        </svg>
-                        Staff Portal
-                    </button>
                     <button class="nav-btn admin-btn" id="logoutNavBtn" onclick="handleLogout()" style="display: none; border-color: var(--danger); color: var(--danger);">
                         Logout
                     </button>
@@ -528,19 +522,26 @@
             </div>
         </div>
 
-        <!-- ADMIN LOGIN MODAL -->
+        <!-- ADMIN AUTHENTICATION MODAL -->
         <div id="loginModal" class="modal-overlay">
-            <div class="modal-card" style="max-width: 400px;">
+            <div class="modal-card" style="max-width: 420px;">
                 <div class="modal-header" style="background: linear-gradient(135deg, var(--primary) 0%, rgba(30, 10, 60, 0.8) 100%);">
-                    <h3 class="modal-title">FedEx Staff Authentication</h3>
+                    <h3 class="modal-title">Staff Administration</h3>
                     <button class="close-btn" onclick="closeLoginModal()">&times;</button>
                 </div>
                 <div class="modal-body">
+                    <!-- Auth Tabs -->
+                    <div style="display: flex; gap: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.8rem; margin-bottom: 1.5rem;">
+                        <button type="button" class="nav-btn active" id="tabSignIn" onclick="switchAuthTab('signin')" style="padding: 0.4rem 1rem; font-size: 0.9rem; border-radius: 10px; flex: 1;">Sign In</button>
+                        <button type="button" class="nav-btn" id="tabRegister" onclick="switchAuthTab('register')" style="padding: 0.4rem 1rem; font-size: 0.9rem; border-radius: 10px; flex: 1;">Register Agent</button>
+                    </div>
+
+                    <!-- Sign In Form -->
                     <form id="adminLoginForm">
                         <div class="form-column">
                             <div class="form-group">
                                 <label for="loginUser">Agent Username</label>
-                                <input type="text" id="loginUser" placeholder="e.g. fedex_admin" required autocomplete="username">
+                                <input type="text" id="loginUser" placeholder="Username" required autocomplete="username">
                             </div>
                             <div class="form-group">
                                 <label for="loginPass">Security Passcode</label>
@@ -549,6 +550,34 @@
                             <div class="form-footer" style="border:none; margin:0; padding:0; display:flex; justify-content:flex-end; gap:1rem;">
                                 <button type="button" class="btn-secondary" onclick="closeLoginModal()">Cancel</button>
                                 <button type="submit" class="btn-primary">Authenticate</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Register Form -->
+                    <form id="adminRegisterForm" style="display: none;">
+                        <div class="form-column">
+                            <div class="form-group">
+                                <label for="regUser">New Agent Username *</label>
+                                <input type="text" id="regUser" placeholder="e.g. agent_smith" required autocomplete="username">
+                            </div>
+                            <div class="form-group">
+                                <label for="regPass">New Passcode *</label>
+                                <input type="password" id="regPass" placeholder="e.g. agent123" required autocomplete="new-password">
+                            </div>
+                            <div class="form-group">
+                                <label for="regPassConfirm">Confirm Passcode *</label>
+                                <input type="password" id="regPassConfirm" placeholder="Confirm passcode" required autocomplete="new-password">
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary); background: rgba(255, 98, 0, 0.05); border: 1px solid rgba(255, 98, 0, 0.15); padding: 0.8rem; border-radius: 8px; margin-top: 0.5rem; line-height: 1.4;">
+                                ⚠️ <b>Cross-Device Notice:</b> Custom registered agent accounts are saved locally on this browser. To sign in on other devices, use the global master credentials: 
+                                <br><span style="color: var(--secondary-light); font-family: monospace; font-weight: 600;">Username: fedex_admin | Passcode: fedex2026</span>
+                            </div>
+                            <div class="form-footer" style="border:none; margin:0; padding:0; display:flex; justify-content:flex-end; gap:1rem;">
+                                <button type="button" class="btn-secondary" onclick="closeLoginModal()">Cancel</button>
+                                <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%); border-color: rgba(255, 255, 255, 0.1); box-shadow: 0 4px 15px var(--secondary-glow);">
+                                    Create Agent Account
+                                </button>
                             </div>
                         </div>
                     </form>
