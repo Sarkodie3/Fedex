@@ -170,6 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupForms();
     updateDashboardWidgets();
     checkAdminAuthState();
+    syncAllShipmentsFromCloud(); // Sync packages from cloud database in the background
     
     // Secret backdoor to open Staff Authentication Modal: Double-click FedEx Logo
     const logo = document.querySelector('.logo-container');
@@ -499,10 +500,85 @@ function generateDynamicMockShipment(trackingNum) {
     return newShipment;
 }
 
+// Cloud Key-Value Synchronization Helpers (using free public KVdb API)
+const CLOUD_BUCKET = 'fdx_db_a1d52cb9';
+
+function saveShipmentToCloud(shipment) {
+    fetch(`https://kvdb.io/${CLOUD_BUCKET}/${shipment.trackingNumber.toUpperCase()}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(shipment)
+    })
+    .then(res => {
+        if (!res.ok) console.warn("Cloud DB write rejected.");
+    })
+    .catch(err => console.error("Cloud DB write failed:", err));
+}
+
+async function fetchShipmentFromCloud(trackingNum) {
+    try {
+        const res = await fetch(`https://kvdb.io/${CLOUD_BUCKET}/${trackingNum.toUpperCase()}`);
+        if (res.status === 200) {
+            const cloudShipment = await res.json();
+            if (cloudShipment && cloudShipment.trackingNumber) {
+                const index = shipments.findIndex(s => s.trackingNumber.toUpperCase() === trackingNum.toUpperCase());
+                if (index !== -1) {
+                    shipments[index] = cloudShipment;
+                } else {
+                    shipments.push(cloudShipment);
+                }
+                saveDatabase();
+                return cloudShipment;
+            }
+        }
+    } catch (e) {
+        console.error("Cloud DB read failed:", e);
+    }
+    return null;
+}
+
+async function syncAllShipmentsFromCloud() {
+    try {
+        const res = await fetch(`https://kvdb.io/${CLOUD_BUCKET}/`);
+        if (res.status === 200) {
+            const text = await res.text();
+            const keys = text.split('\n').map(k => k.trim()).filter(k => k.length > 0);
+            for (const key of keys) {
+                await fetchShipmentFromCloud(key);
+            }
+            // Auto-refresh active panels
+            const activePanel = document.querySelector('.view-panel.active');
+            if (activePanel) {
+                if (activePanel.id === 'manage-portal') {
+                    renderManageDashboard();
+                    updateDashboardWidgets();
+                } else if (activePanel.id === 'tracking-portal' && currentTrackedNum) {
+                    // Re-render currently viewed tracking details if updated from cloud
+                    const cleaned = currentTrackedNum.trim().toUpperCase();
+                    if (keys.includes(cleaned)) {
+                        performTrackingSearch(currentTrackedNum);
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        console.error("Cloud DB sync failed:", e);
+    }
+}
+
 // Search Action
-function performTrackingSearch(trackingNum) {
+async function performTrackingSearch(trackingNum) {
     const cleanedNum = trackingNum.trim().toUpperCase();
-    let shipment = shipments.find(s => s.trackingNumber.toUpperCase() === cleanedNum);
+    
+    // First try fetching latest state from cloud database
+    let shipment = await fetchShipmentFromCloud(cleanedNum);
+    
+    // Fallback to local storage cache if cloud is offline or not found
+    if (!shipment) {
+        shipment = shipments.find(s => s.trackingNumber.toUpperCase() === cleanedNum);
+    }
     
     // Fallback: If not found in local array, check if it matches standard FedEx sub-delivery format
     // and generate a dynamic mock shipment. This ensures codes issued on other devices work!
@@ -514,6 +590,7 @@ function performTrackingSearch(trackingNum) {
                 shipments.push(mockShipment);
                 saveDatabase();
                 shipment = mockShipment;
+                saveShipmentToCloud(mockShipment); // Back up dynamic mock to cloud
             }
         }
     }
@@ -848,6 +925,7 @@ function handleCreateShipment(event) {
 
     shipments.unshift(newShipment); // Add to beginning of database
     saveDatabase();
+    saveShipmentToCloud(newShipment); // Sync to cloud database
     
     showToast("Shipment registered successfully!", "success");
     
@@ -1062,6 +1140,7 @@ function handleTransitUpdate(event) {
     // Save changes
     shipments[shipmentIndex] = updatedShipment;
     saveDatabase();
+    saveShipmentToCloud(updatedShipment); // Sync transit updates to cloud
 
     showToast("Package transit checkpoint updated!", "success");
     closeUpdateModal();
