@@ -1,0 +1,13 @@
+{
+  "name": "fedex-sub-delivery",
+  "version": "1.0.0",
+  "description": "FedEx Sub-Delivery & Tracking Portal",
+  "main": "app.js",
+  "scripts": {
+    "build": "mkdir -p dist && cp index.html styles.css app.js fedex_delivery_truck.jpg dist/",
+    "start": "python -m http.server 8000"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
