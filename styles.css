@@ -1234,3 +1234,126 @@ footer {
 .trend-up {
     color: var(--success);
 }
+
+/* Custom Responsiveness Improvements across all devices */
+
+/* Header Mobile Adaptation */
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+        text-align: center;
+    }
+    nav {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .nav-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+    .logo-tagline {
+        display: none;
+    }
+}
+
+/* Tracking Details & Map Mobile Gaps */
+@media (max-width: 1024px) {
+    main {
+        padding: 1rem;
+    }
+    .hero-title {
+        font-size: 2.4rem;
+    }
+    .hero-subtitle {
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+    .hero-section {
+        padding: 3rem 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    .shipment-meta-grid {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+    }
+    .node-label {
+        display: none; /* Hide crowded horizontal nodes on mobile */
+    }
+    .progress-bar-container {
+        padding: 0.5rem 0;
+    }
+    .progress-track {
+        height: 8px;
+    }
+    .progress-node {
+        width: 18px;
+        height: 18px;
+    }
+    .map-container {
+        min-height: 280px;
+    }
+}
+
+/* Form Fields Mobile Adaptation */
+@media (max-width: 600px) {
+    .form-layout {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    .form-footer {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+    }
+    .form-footer > div {
+        grid-column: span 1 !important;
+    }
+    .form-footer.actions-bar {
+        flex-direction: column;
+        width: 100%;
+    }
+    .form-footer.actions-bar button {
+        width: 100%;
+    }
+    
+    /* Modals Responsive Styling */
+    .modal-card {
+        width: 94%;
+        margin: 1rem auto;
+    }
+    .modal-body {
+        padding: 1.2rem;
+    }
+    .label-container {
+        padding: 1rem;
+        max-width: 100%;
+    }
+    .label-addresses {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+.form-actions-bar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    width: 100%;
+}
+@media (max-width: 600px) {
+    .form-actions-bar {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    .form-actions-bar button {
+        width: 100%;
+    }
+}
