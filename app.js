@@ -170,6 +170,17 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDashboardWidgets();
     checkAdminAuthState();
     
+    // Secret backdoor to open Staff Authentication Modal: Double-click FedEx Logo
+    const logo = document.querySelector('.logo-container');
+    if (logo) {
+        logo.addEventListener('dblclick', () => {
+            openLoginModal();
+        });
+        // Set visual indicator tooltip programmatically for ease of developer discovery,
+        // but it remains hidden from standard view.
+        logo.setAttribute('title', 'Double-click to open Staff Portal');
+    }
+    
     // Default search to show something beautiful on load
     const searchInput = document.getElementById('trackingSearchInput');
     if (searchInput) {
@@ -276,6 +287,12 @@ function setupForms() {
     const loginForm = document.getElementById('adminLoginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', handleAdminLogin);
+    }
+
+    // Admin Register form
+    const registerForm = document.getElementById('adminRegisterForm');
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleAdminRegister);
     }
 }
 
@@ -946,6 +963,8 @@ function closeTermsModal() {
 
 // Staff Portal Authentication Functions
 function openLoginModal() {
+    // Default modal view is sign-in tab
+    switchAuthTab('signin');
     const modal = document.getElementById('loginModal');
     if (modal) modal.classList.add('active');
 }
@@ -954,9 +973,59 @@ function closeLoginModal() {
     const modal = document.getElementById('loginModal');
     if (modal) modal.classList.remove('active');
     
-    // Reset login form fields
+    // Reset login & register form fields
     const loginForm = document.getElementById('adminLoginForm');
     if (loginForm) loginForm.reset();
+    const regForm = document.getElementById('adminRegisterForm');
+    if (regForm) regForm.reset();
+}
+
+function switchAuthTab(tab) {
+    const signinForm = document.getElementById('adminLoginForm');
+    const registerForm = document.getElementById('adminRegisterForm');
+    const tabSignIn = document.getElementById('tabSignIn');
+    const tabRegister = document.getElementById('tabRegister');
+
+    if (tab === 'signin') {
+        if (signinForm) signinForm.style.display = 'block';
+        if (registerForm) registerForm.style.display = 'none';
+        if (tabSignIn) tabSignIn.classList.add('active');
+        if (tabRegister) tabRegister.classList.remove('active');
+    } else {
+        if (signinForm) signinForm.style.display = 'none';
+        if (registerForm) registerForm.style.display = 'block';
+        if (tabSignIn) tabSignIn.classList.remove('active');
+        if (tabRegister) tabRegister.classList.add('active');
+    }
+}
+
+function handleAdminRegister(event) {
+    event.preventDefault();
+    const user = document.getElementById('regUser').value.trim();
+    const pass = document.getElementById('regPass').value.trim();
+    const passConfirm = document.getElementById('regPassConfirm').value.trim();
+
+    if (pass !== passConfirm) {
+        showToast("Passcodes do not match.", "error");
+        return;
+    }
+
+    if (user.toLowerCase() === 'fedex_admin') {
+        showToast("Username 'fedex_admin' is reserved.", "error");
+        return;
+    }
+
+    let staffDb = JSON.parse(localStorage.getItem('fedex_staff_credentials') || '[]');
+    if (staffDb.some(u => u.username.toLowerCase() === user.toLowerCase())) {
+        showToast("Username already exists.", "error");
+        return;
+    }
+
+    staffDb.push({ username: user, passcode: pass });
+    localStorage.setItem('fedex_staff_credentials', JSON.stringify(staffDb));
+
+    showToast("Staff account created successfully! Please sign in.", "success");
+    switchAuthTab('signin');
 }
 
 function handleAdminLogin(event) {
@@ -964,8 +1033,11 @@ function handleAdminLogin(event) {
     const user = document.getElementById('loginUser').value.trim();
     const pass = document.getElementById('loginPass').value.trim();
 
-    // Default simulation credentials
-    if (user === 'fedex_admin' && pass === 'fedex2026') {
+    // Check default simulation credentials or registered staff database
+    let staffDb = JSON.parse(localStorage.getItem('fedex_staff_credentials') || '[]');
+    const isValidCustom = staffDb.some(u => u.username === user && u.passcode === pass);
+
+    if ((user === 'fedex_admin' && pass === 'fedex2026') || isValidCustom) {
         sessionStorage.setItem('fedex_admin_logged_in', 'true');
         showToast("Authenticated successfully. Access granted.", "success");
         checkAdminAuthState();
