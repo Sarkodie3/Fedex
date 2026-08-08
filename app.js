@@ -501,7 +501,7 @@ function generateDynamicMockShipment(trackingNum) {
 }
 
 // Cloud Key-Value Synchronization Helpers (using free public KVdb API)
-const CLOUD_BUCKET = 'fdx_db_a1d52cb9';
+const CLOUD_BUCKET = 'M9ALabJXBHJRSX23bAktH';
 
 function saveShipmentToCloud(shipment) {
     fetch(`https://kvdb.io/${CLOUD_BUCKET}/${shipment.trackingNumber.toUpperCase()}`, {
@@ -610,18 +610,41 @@ async function performTrackingSearch(trackingNum) {
     if (welcomeMsg) welcomeMsg.style.display = 'none';
     if (resultsContainer) resultsContainer.style.display = 'grid';
 
+    // Staff-vs-Customer Restriction Logic
+    const isStaff = sessionStorage.getItem('fedex_admin_logged_in') === 'true';
+    
+    // Check if package is a default or user-created shipment (not a general public mock code)
+    const isSpecialShipment = !cleanedNum.startsWith('FDX-MOCK-'); // mock codes are safe, customized codes contain sensitive contents
+    
+    let displaySenderName = shipment.senderName;
+    let displaySenderAddress = `${shipment.senderAddress}, ${shipment.senderCity} ${shipment.senderZip}`;
+    let displayRecipientName = shipment.recipientName;
+    let displayRecipientAddress = `${shipment.recipientAddress}, ${shipment.recipientCity} ${shipment.recipientZip}`;
+    let displayDescription = shipment.description || 'N/A';
+    let displayValue = shipment.declaredValue || 'N/A';
+
+    // If client is a general customer (non-staff) searching for a custom-created package, show anonymized mock data instead
+    if (!isStaff && isSpecialShipment) {
+        displaySenderName = 'FedEx Logistics Hub';
+        displaySenderAddress = 'Anonymized Origin Facility, ' + shipment.senderCity;
+        displayRecipientName = 'Authorized Consignee';
+        displayRecipientAddress = 'Anonymized Destination Facility, ' + shipment.recipientCity;
+        displayDescription = 'Secure Sealed Cargo (Protected Class)';
+        displayValue = 'Protected Value';
+    }
+
     // Update Text Elements
     document.getElementById('displayTrackingNum').innerText = shipment.trackingNumber;
     document.getElementById('displayServiceType').innerText = shipment.serviceType;
     document.getElementById('displayWeight').innerText = shipment.weight || 'N/A';
     document.getElementById('displayDimensions').innerText = shipment.dimensions || 'N/A';
-    document.getElementById('displayValue').innerText = shipment.declaredValue || 'N/A';
-    document.getElementById('displayDescription').innerText = shipment.description || 'N/A';
+    document.getElementById('displayValue').innerText = displayValue;
+    document.getElementById('displayDescription').innerText = displayDescription;
     
-    document.getElementById('displaySenderName').innerText = shipment.senderName;
-    document.getElementById('displaySenderAddress').innerText = `${shipment.senderAddress}, ${shipment.senderCity} ${shipment.senderZip}`;
-    document.getElementById('displayRecipientName').innerText = shipment.recipientName;
-    document.getElementById('displayRecipientAddress').innerText = `${shipment.recipientAddress}, ${shipment.recipientCity} ${shipment.recipientZip}`;
+    document.getElementById('displaySenderName').innerText = displaySenderName;
+    document.getElementById('displaySenderAddress').innerText = displaySenderAddress;
+    document.getElementById('displayRecipientName').innerText = displayRecipientName;
+    document.getElementById('displayRecipientAddress').innerText = displayRecipientAddress;
 
     // Set Status Badge
     const badge = document.getElementById('displayStatusBadge');
