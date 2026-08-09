@@ -390,6 +390,8 @@ async function performTrackingSearch(trackingNum) {
     const estBanner = document.getElementById('estimatedDeliveryBanner');
     if (shipment.status === 'delivered') {
         estBanner.innerHTML = `<h3>Delivered</h3><p>Package was delivered on ${formatDateTime(latestCheck.timestamp)} at ${latestCheck.location}</p>`;
+    } else if (shipment.estimatedDelivery) {
+        estBanner.innerHTML = `<h3>Estimated Delivery</h3><p>${shipment.estimatedDelivery}</p>`;
     } else {
         estBanner.innerHTML = `<h3>Estimated Delivery</h3><p>Pending transit checkpoint updates. Current Location: ${latestCheck.location}</p>`;
     }
@@ -855,6 +857,11 @@ function openUpdateStatusModal(trackingNum) {
     if (nextStatusSelect) {
         nextStatusSelect.value = shipment.status;
     }
+    
+    const estDeliveryInput = document.getElementById('updateEstDelivery');
+    if (estDeliveryInput) {
+        estDeliveryInput.value = shipment.estimatedDelivery || '';
+    }
 
     const modal = document.getElementById('updateModal');
     if (modal) modal.classList.add('active');
@@ -872,6 +879,7 @@ function handleTransitUpdate(event) {
     const status = document.getElementById('updateStatus').value;
     const location = document.getElementById('updateLocation').value.trim();
     const details = document.getElementById('updateDetails').value.trim();
+    const estDelivery = document.getElementById('updateEstDelivery').value.trim();
 
     if (!location) {
         showToast("Please enter a checkpoint location.", "error");
@@ -893,6 +901,11 @@ function handleTransitUpdate(event) {
 
     // Update current status
     updatedShipment.status = status;
+    if (estDelivery) {
+        updatedShipment.estimatedDelivery = estDelivery;
+    } else {
+        delete updatedShipment.estimatedDelivery;
+    }
 
     // Save changes
     shipments[shipmentIndex] = updatedShipment;
@@ -914,6 +927,8 @@ function handleTransitUpdate(event) {
     // Reset update inputs
     document.getElementById('updateLocation').value = '';
     document.getElementById('updateDetails').value = '';
+    const estInput = document.getElementById('updateEstDelivery');
+    if(estInput) estInput.value = '';
 }
 
 function openShippingLabelModalByTracking(trackingNum) {
