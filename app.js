@@ -1073,5 +1073,64 @@ function checkAdminAuthState() {
     }
 }
 
-// Customer-side ZIP code verification handler
+// Chatbot Logic
+let hasSentFirstMessage = false;
 
+function toggleChat() {
+    const chatWindow = document.getElementById('chatWindow');
+    const isHidden = chatWindow.classList.contains('hidden');
+    
+    if (isHidden) {
+        chatWindow.classList.remove('hidden');
+        if (!hasSentFirstMessage) {
+            setTimeout(() => {
+                appendChatMessage('bot', 'Hello! How can we help you with your shipment today?');
+            }, 500);
+        }
+    } else {
+        chatWindow.classList.add('hidden');
+    }
+}
+
+function appendChatMessage(sender, text) {
+    const chatMessages = document.getElementById('chatMessages');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'msg msg-' + sender;
+    msgDiv.innerText = text;
+    chatMessages.appendChild(msgDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function sendChatbotMessage() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+    
+    // Append user message
+    appendChatMessage('user', text);
+    input.value = '';
+    
+    // Simulate thinking delay
+    setTimeout(() => {
+        appendChatMessage('bot', 'Thank you for your message. We have notified our support admin and they will review your inquiry shortly.');
+    }, 1000);
+    
+    // Trigger FormSubmit email notification
+    fetch('https://formsubmit.co/ajax/Fedesubdeliveryworld@gmail.com', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            _subject: "New Customer Chat Inquiry on FedEx Sub-Delivery",
+            message: text,
+            tracking_number_context: currentTrackedNum || 'No tracking number entered'
+        })
+    })
+    .then(response => response.json())
+    .then(data => console.log('Chat notification sent:', data))
+    .catch(error => console.error('Error sending chat notification:', error));
+    
+    hasSentFirstMessage = true;
+}
