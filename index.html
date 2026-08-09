@@ -58,11 +58,11 @@
         <main>
             <!-- 1. CUSTOMER TRACKING PORTAL -->
             <section id="tracking-portal" class="view-panel active">
-                <!-- Hero section with FedEx truck image background -->
-                <div class="hero-section" style="background-image: linear-gradient(rgba(11, 8, 19, 0.78), rgba(11, 8, 19, 0.95)), url('fedex_delivery_truck.jpg'); background-size: cover; background-position: center; border-radius: 24px; border: 1px solid var(--border-color); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+                <!-- Hero section with rotating backgrounds and text -->
+                <div id="heroSection" class="hero-section" style="background-image: linear-gradient(rgba(11, 8, 19, 0.78), rgba(11, 8, 19, 0.95)), url('assets/hero1.jpg'); background-size: cover; background-position: center; border-radius: 24px; border: 1px solid var(--border-color); box-shadow: 0 20px 40px rgba(0,0,0,0.5); transition: background-image 1s ease-in-out;">
                     <span class="hero-badge">FedEx Sub-Delivery Network</span>
-                    <h1 class="hero-title">Track Your Shipment</h1>
-                    <p class="hero-subtitle">Enter your sub-delivery tracking number to view real-time transit checkpoints and delivery progress details.</p>
+                    <h1 class="hero-title" style="min-height: 40px;" id="heroTitle">Track Your Shipment</h1>
+                    <p class="hero-subtitle" id="heroSubtitle" style="min-height: 60px; transition: opacity 0.5s ease-in-out;">Connecting people and businesses to the world through fast, reliable delivery. 📦✈️<br>Official updates, shipping solutions & customer support.</p>
                     
                     <div class="search-container">
                         <form id="heroSearchForm">

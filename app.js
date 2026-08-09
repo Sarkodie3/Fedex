@@ -1072,3 +1072,40 @@ function checkAdminAuthState() {
         }
     }
 }
+
+// Hero Section Slider
+const heroSlides = [
+    {
+        bg: "assets/hero1.jpg",
+        text: "Connecting people and businesses to the world through fast, reliable delivery. 📦✈️<br>Official updates, shipping solutions & customer support."
+    },
+    {
+        bg: "assets/hero2.jpg",
+        text: "🌍 Delivering what matters, wherever it needs to go. Your trusted partner for global shipping & logistics. 📦✈️"
+    },
+    {
+        bg: "assets/hero3.jpg",
+        text: "Connecting businesses and people worldwide. 🌍. Delivering possibilities across the globe. 🌍📦<br>Reliable shipping solutions, logistics updates and customer support."
+    }
+];
+
+let currentSlide = 0;
+function rotateHero() {
+    const heroSection = document.getElementById('heroSection');
+    const heroSubtitle = document.getElementById('heroSubtitle');
+    if (!heroSection || !heroSubtitle) return;
+
+    currentSlide = (currentSlide + 1) % heroSlides.length;
+    const slide = heroSlides[currentSlide];
+
+    heroSubtitle.style.opacity = '0';
+    
+    setTimeout(() => {
+        heroSection.style.backgroundImage = `linear-gradient(rgba(11, 8, 19, 0.78), rgba(11, 8, 19, 0.95)), url('${slide.bg}')`;
+        heroSubtitle.innerHTML = slide.text;
+        heroSubtitle.style.opacity = '1';
+    }, 500);
+}
+
+// Start rotation every 6 seconds
+setInterval(rotateHero, 6000);
