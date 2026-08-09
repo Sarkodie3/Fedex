@@ -47,114 +47,7 @@ const CITY_COORDINATES = {
 };
 
 // Default Shipments to seed Database
-const DEFAULT_SHIPMENTS = [
-    {
-        trackingNumber: 'FDX-2026-0808-1001',
-        serviceType: 'FedEx Priority Overnight',
-        weight: '6.8 lbs',
-        dimensions: '14" x 10" x 6"',
-        declaredValue: '$250.00',
-        description: 'Tech Accessories & Circuit Boards',
-        status: 'transit',
-        senderName: 'Silicon Circuits Corp',
-        senderPhone: '+1 (408) 555-0199',
-        senderEmail: 'shipping@siliconcircuits.com',
-        senderAddress: '100 Innovation Way',
-        senderCity: 'San Jose, CA',
-        senderZip: '95110',
-        recipientName: 'Alex Mercer',
-        recipientPhone: '+1 (312) 555-0143',
-        recipientEmail: 'alex.mercer@email.com',
-        recipientAddress: '456 Oak Avenue, Apt 3B',
-        recipientCity: 'Chicago, IL',
-        recipientZip: '60611',
-        history: [
-            {
-                status: 'transit',
-                location: 'Indianapolis, IN',
-                details: 'Arrived at FedEx sorting facility.',
-                timestamp: '2026-08-08T09:30:00Z'
-            },
-            {
-                status: 'transit',
-                location: 'San Jose, CA',
-                details: 'Left FedEx origin facility.',
-                timestamp: '2026-08-08T04:15:00Z'
-            },
-            {
-                status: 'pickup',
-                location: 'San Jose, CA',
-                details: 'Picked up by FedEx courier.',
-                timestamp: '2026-08-07T19:00:00Z'
-            },
-            {
-                status: 'created',
-                location: 'San Jose, CA',
-                details: 'Shipment label created and details sent to FedEx.',
-                timestamp: '2026-08-07T15:00:00Z'
-            }
-        ]
-    },
-    {
-        trackingNumber: 'FDX-2026-0808-2002',
-        serviceType: 'FedEx Ground',
-        weight: '2.1 lbs',
-        dimensions: '10" x 8" x 4"',
-        declaredValue: '$120.00',
-        description: 'Premium Leather Handbag',
-        status: 'delivered',
-        senderName: 'Fifth Avenue Couture',
-        senderPhone: '+1 (212) 555-9874',
-        senderEmail: 'orders@fifthavecouture.com',
-        senderAddress: '789 Fifth Avenue',
-        senderCity: 'New York, NY',
-        senderZip: '10022',
-        recipientName: 'Sarah Jenkins',
-        recipientPhone: '+1 (206) 555-0812',
-        recipientEmail: 'sarah.jenkins@outlook.com',
-        recipientAddress: '12 Maple Street',
-        recipientCity: 'Seattle, WA',
-        recipientZip: '98101',
-        history: [
-            {
-                status: 'delivered',
-                location: 'Seattle, WA',
-                details: 'Delivered - Left at front door. Signature not required.',
-                timestamp: '2026-08-08T10:00:00Z'
-            },
-            {
-                status: 'out_for_delivery',
-                location: 'Seattle, WA',
-                details: 'Out for delivery on FedEx truck.',
-                timestamp: '2026-08-08T07:45:00Z'
-            },
-            {
-                status: 'transit',
-                location: 'Seattle, WA',
-                details: 'Arrived at local FedEx facility.',
-                timestamp: '2026-08-08T05:00:00Z'
-            },
-            {
-                status: 'transit',
-                location: 'Chicago, IL',
-                details: 'In transit to destination facility.',
-                timestamp: '2026-08-07T02:00:00Z'
-            },
-            {
-                status: 'pickup',
-                location: 'New York, NY',
-                details: 'Picked up at New York retail center.',
-                timestamp: '2026-08-06T17:30:00Z'
-            },
-            {
-                status: 'created',
-                location: 'New York, NY',
-                details: 'Billing information received.',
-                timestamp: '2026-08-06T14:00:00Z'
-            }
-        ]
-    }
-];
+const DEFAULT_SHIPMENTS = [];
 
 let shipments = [];
 let leafletMap = null;
@@ -183,11 +76,9 @@ document.addEventListener('DOMContentLoaded', () => {
         logo.setAttribute('title', 'Double-click to open Staff Portal');
     }
     
-    // Default search to show something beautiful on load
     const searchInput = document.getElementById('trackingSearchInput');
     if (searchInput) {
-        searchInput.value = 'FDX-2026-0808-1001';
-        performTrackingSearch('FDX-2026-0808-1001');
+        searchInput.value = '';
     }
 });
 
@@ -372,165 +263,32 @@ function generateBarcodeSVG(text) {
 }
 
 // Dynamic Mock Shipment Generator for Cross-Device Tracking Verification
-function generateDynamicMockShipment(trackingNum) {
-    const parts = trackingNum.split('-');
-    if (parts.length !== 3) return null;
-    
-    const dateStr = parts[1]; // YYYYMMDD
-    const randStr = parts[2];
-    
-    // Parse date
-    const year = dateStr.slice(0, 4);
-    const month = dateStr.slice(4, 6);
-    const day = dateStr.slice(6, 8);
-    const dateObj = new Date(`${year}-${month}-${day}T12:00:00Z`);
-    
-    // Deterministic generation based on random suffix hash code
-    const randNum = parseInt(randStr, 10) || 5555;
-    
-    // Global hubs list for routing
-    const senderHubs = ['Memphis, USA', 'London, UK', 'Frankfurt, Germany', 'Tokyo, Japan', 'Singapore'];
-    const recipientHubs = ['Paris, France', 'Sydney, Australia', 'New York, USA', 'Toronto, Canada', 'Shanghai, China'];
-    
-    const senderCity = senderHubs[randNum % senderHubs.length];
-    const recipientCity = recipientHubs[(randNum + 2) % recipientHubs.length];
-    
-    // Intermediate checkpoint locations
-    const transitCities = ['Indianapolis, USA', 'Anchorage, USA', 'Dubai, UAE', 'Hong Kong'];
-    const transitCity = transitCities[(randNum + 1) % transitCities.length];
 
-    const serviceTypes = ['FedEx International Priority', 'FedEx International Economy', 'FedEx First Overnight'];
-    const service = serviceTypes[randNum % serviceTypes.length];
-    
-    const weights = ['3.5 lbs', '5.2 lbs', '1.8 lbs', '12.0 lbs'];
-    const weight = weights[randNum % weights.length];
-    
-    const dims = ['12" x 10" x 6"', '8" x 6" x 4"', '18" x 14" x 12"'];
-    const dim = dims[randNum % dims.length];
 
-    const values = ['$250.00', '$95.00', '$450.00', '$1,200.00'];
-    const value = values[randNum % values.length];
-
-    // Determine status deterministically based on date (older date = delivered, newer = transit)
-    const diffDays = Math.floor((new Date() - dateObj) / (1000 * 60 * 60 * 24));
-    let status = 'transit';
-    if (diffDays >= 3) {
-        status = 'delivered';
-    } else if (diffDays <= 0) {
-        status = 'created';
-    }
-
-    const newShipment = {
-        trackingNumber: trackingNum.toUpperCase(),
-        serviceType: service,
-        weight: weight,
-        dimensions: dim,
-        declaredValue: value,
-        description: 'Document and Parcel Logistics',
-        status: status,
-        senderName: 'FedEx Hub Facility',
-        senderPhone: '+1 (800) 463-3339',
-        senderEmail: 'dispatch@fedex-sub.com',
-        senderAddress: '100 FedEx Global Way',
-        senderCity: senderCity,
-        senderZip: '38118',
-        recipientName: 'Global Consignee Logistics',
-        recipientPhone: '+1 (555) 019-2831',
-        recipientEmail: 'consignee@global-import.com',
-        recipientAddress: '200 Logistics Blvd Suite B',
-        recipientCity: recipientCity,
-        recipientZip: '90001',
-        history: []
-    };
-
-    // Construct history timeline
-    const createdTime = new Date(dateObj.getTime());
-    const pickupTime = new Date(dateObj.getTime() + 4 * 60 * 60 * 1000); // +4h
-    const transitTime = new Date(dateObj.getTime() + 18 * 60 * 60 * 1000); // +18h
-    const deliveryTime = new Date(dateObj.getTime() + 48 * 60 * 60 * 1000); // +48h
-
-    if (status === 'created') {
-        newShipment.history.push({
-            status: 'created',
-            location: senderCity,
-            details: 'Billing information received. Package is ready for pickup.',
-            timestamp: createdTime.toISOString()
-        });
-    } else if (status === 'transit') {
-        newShipment.history.push({
-            status: 'transit',
-            location: transitCity,
-            details: 'In transit to destination hub.',
-            timestamp: transitTime.toISOString()
-        }, {
-            status: 'pickup',
-            location: senderCity,
-            details: 'Package collected and sorted at origin hub.',
-            timestamp: pickupTime.toISOString()
-        }, {
-            status: 'created',
-            location: senderCity,
-            details: 'Billing information received. Package is ready for pickup.',
-            timestamp: createdTime.toISOString()
-        });
-    } else if (status === 'delivered') {
-        newShipment.history.push({
-            status: 'delivered',
-            location: recipientCity,
-            details: 'Delivered. Left at receiving bay. Signature recorded.',
-            timestamp: deliveryTime.toISOString()
-        }, {
-            status: 'transit',
-            location: transitCity,
-            details: 'Sorted and departing international transit gate.',
-            timestamp: transitTime.toISOString()
-        }, {
-            status: 'pickup',
-            location: senderCity,
-            details: 'Package collected and sorted at origin hub.',
-            timestamp: pickupTime.toISOString()
-        }, {
-            status: 'created',
-            location: senderCity,
-            details: 'Billing information received. Package is ready for pickup.',
-            timestamp: createdTime.toISOString()
-        });
-    }
-
-    return newShipment;
-}
-
-// Cloud Key-Value Synchronization Helpers (using free public KVdb API)
-const CLOUD_BUCKET = 'M9ALabJXBHJRSX23bAktH';
+// Cloud Key-Value Synchronization Helpers (using JSONBlob)
+const CLOUD_URL = 'https://jsonblob.com/api/jsonBlob/019fe447-5087-7315-8ff9-6e953679fa11';
 
 function saveShipmentToCloud(shipment) {
-    fetch(`https://kvdb.io/${CLOUD_BUCKET}/${shipment.trackingNumber.toUpperCase()}`, {
-        method: 'POST',
+    fetch(CLOUD_URL, {
+        method: 'PUT',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
         },
-        body: JSON.stringify(shipment)
-    })
-    .then(res => {
-        if (!res.ok) console.warn("Cloud DB write rejected.");
+        body: JSON.stringify(shipments)
     })
     .catch(err => console.error("Cloud DB write failed:", err));
 }
 
 async function fetchShipmentFromCloud(trackingNum) {
     try {
-        const res = await fetch(`https://kvdb.io/${CLOUD_BUCKET}/${trackingNum.toUpperCase()}`);
+        const res = await fetch(CLOUD_URL);
         if (res.status === 200) {
-            const cloudShipment = await res.json();
-            if (cloudShipment && cloudShipment.trackingNumber) {
-                const index = shipments.findIndex(s => s.trackingNumber.toUpperCase() === trackingNum.toUpperCase());
-                if (index !== -1) {
-                    shipments[index] = cloudShipment;
-                } else {
-                    shipments.push(cloudShipment);
-                }
+            const cloudShipments = await res.json();
+            if (Array.isArray(cloudShipments) && cloudShipments.length > 0) {
+                shipments = cloudShipments;
                 saveDatabase();
-                return cloudShipment;
+                return shipments.find(s => s.trackingNumber.toUpperCase() === trackingNum.toUpperCase());
             }
         }
     } catch (e) {
@@ -540,20 +298,19 @@ async function fetchShipmentFromCloud(trackingNum) {
 }
 
 async function syncAllShipmentsFromCloud() {
-    // 1. Back up all locally stored packages to the cloud database on startup
-    if (Array.isArray(shipments)) {
-        for (const shipment of shipments) {
-            saveShipmentToCloud(shipment);
-        }
-    }
-
     try {
-        const res = await fetch(`https://kvdb.io/${CLOUD_BUCKET}/`);
+        const res = await fetch(CLOUD_URL);
         if (res.status === 200) {
-            const text = await res.text();
-            const keys = text.split('\n').map(k => k.trim()).filter(k => k.length > 0);
-            for (const key of keys) {
-                await fetchShipmentFromCloud(key);
+            const cloudShipments = await res.json();
+            if (Array.isArray(cloudShipments) && cloudShipments.length > 0) {
+                if (shipments.length > cloudShipments.length) {
+                    saveShipmentToCloud(null); // Push local data if it's more comprehensive
+                } else {
+                    shipments = cloudShipments;
+                    saveDatabase();
+                }
+            } else if (shipments.length > 0) {
+                saveShipmentToCloud(null);
             }
             // Auto-refresh active panels
             const activePanel = document.querySelector('.view-panel.active');
@@ -562,11 +319,7 @@ async function syncAllShipmentsFromCloud() {
                     renderManageDashboard();
                     updateDashboardWidgets();
                 } else if (activePanel.id === 'tracking-portal' && currentTrackedNum) {
-                    // Re-render currently viewed tracking details if updated from cloud
-                    const cleaned = currentTrackedNum.trim().toUpperCase();
-                    if (keys.includes(cleaned)) {
-                        performTrackingSearch(currentTrackedNum);
-                    }
+                    performTrackingSearch(currentTrackedNum);
                 }
             }
         }
@@ -587,20 +340,7 @@ async function performTrackingSearch(trackingNum) {
         shipment = shipments.find(s => s.trackingNumber.toUpperCase() === cleanedNum);
     }
     
-    // Fallback: If not found in local array, check if it matches standard FedEx sub-delivery format
-    // and generate a dynamic mock shipment. This ensures codes issued on other devices work!
-    if (!shipment) {
-        const standardFormat = /^FDX-\d{8}-\d{4}$/i;
-        if (standardFormat.test(cleanedNum)) {
-            const mockShipment = generateDynamicMockShipment(cleanedNum);
-            if (mockShipment) {
-                shipments.push(mockShipment);
-                saveDatabase();
-                shipment = mockShipment;
-                saveShipmentToCloud(mockShipment); // Back up dynamic mock to cloud
-            }
-        }
-    }
+    // Fallback: None. If it's not found in the DB, it does not exist.
     
     const resultsContainer = document.getElementById('trackingResultsContainer');
     const welcomeMsg = document.getElementById('trackingWelcomeMsg');
@@ -617,12 +357,6 @@ async function performTrackingSearch(trackingNum) {
     if (welcomeMsg) welcomeMsg.style.display = 'none';
     if (resultsContainer) resultsContainer.style.display = 'grid';
 
-    // Staff-vs-Customer Restriction Logic
-    const isStaff = sessionStorage.getItem('fedex_admin_logged_in') === 'true';
-    
-    // Check if package is a default or user-created shipment (not a general public mock code)
-    const isSpecialShipment = !cleanedNum.startsWith('FDX-MOCK-'); // mock codes are safe, customized codes contain sensitive contents
-    
     let displaySenderName = shipment.senderName;
     let displaySenderAddress = `${shipment.senderAddress}, ${shipment.senderCity} ${shipment.senderZip}`;
     let displayRecipientName = shipment.recipientName;
@@ -630,25 +364,8 @@ async function performTrackingSearch(trackingNum) {
     let displayDescription = shipment.description || 'N/A';
     let displayValue = shipment.declaredValue || 'N/A';
 
-    // Check if customer already verified the ZIP for this shipment
-    const isZipVerified = sessionStorage.getItem('verified_zip_' + cleanedNum) === 'true';
     const zipBox = document.getElementById('zipVerificationBox');
-
-    // If client is a general customer (non-staff) searching for a custom-created package, show anonymized mock data instead
-    if (!isStaff && isSpecialShipment && !isZipVerified) {
-        displaySenderName = 'FedEx Logistics Hub';
-        displaySenderAddress = 'Anonymized Origin Facility, ' + shipment.senderCity;
-        displayRecipientName = 'Authorized Consignee';
-        displayRecipientAddress = 'Anonymized Destination Facility, ' + shipment.recipientCity;
-        displayDescription = 'Secure Sealed Cargo (Protected Class)';
-        displayValue = 'Protected Value';
-        
-        // Show verification input
-        if (zipBox) zipBox.style.display = 'block';
-    } else {
-        // Hide verification input if staff or already verified
-        if (zipBox) zipBox.style.display = 'none';
-    }
+    if (zipBox) zipBox.style.display = 'none';
 
     // Update Text Elements
     document.getElementById('displayTrackingNum').innerText = shipment.trackingNumber;
@@ -1357,30 +1074,4 @@ function checkAdminAuthState() {
 }
 
 // Customer-side ZIP code verification handler
-function handleZipVerification() {
-    const inputVal = document.getElementById('verifyZipInput').value.trim().toUpperCase();
-    if (!inputVal) {
-        showToast("Please enter a ZIP/Postal Code.", "error");
-        return;
-    }
 
-    if (!currentTrackedNum) return;
-    
-    const shipment = shipments.find(s => s.trackingNumber.toUpperCase() === currentTrackedNum.toUpperCase());
-    if (!shipment) {
-        showToast("Error locating current shipment details.", "error");
-        return;
-    }
-
-    // Compare with the recipient's ZIP code in database (case & spaces stripped)
-    const targetZip = shipment.recipientZip.trim().toUpperCase().replace(/\s+/g, '');
-    const cleanInput = inputVal.replace(/\s+/g, '');
-
-    if (cleanInput === targetZip) {
-        sessionStorage.setItem('verified_zip_' + currentTrackedNum.toUpperCase(), 'true');
-        showToast("Shipment details unlocked successfully!", "success");
-        performTrackingSearch(currentTrackedNum); // Refresh results to render un-anonymized data
-    } else {
-        showToast("Incorrect ZIP/Postal Code. Verification failed.", "error");
-    }
-}
