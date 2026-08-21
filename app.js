@@ -82,24 +82,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-function initDatabase() {
-    const saved = localStorage.getItem('fedex_shipments');
-    if (saved) {
-        try {
-            shipments = JSON.parse(saved);
-        } catch (e) {
-            console.error("Error parsing local database, resetting...", e);
-            shipments = [...DEFAULT_SHIPMENTS];
-            saveDatabase();
-        }
-    } else {
-        shipments = [...DEFAULT_SHIPMENTS];
-        saveDatabase();
-    }
-}
+// Firebase Configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDo9g3yc067OzA9bX1-2EhtAafrtTYlRJg",
+  authDomain: "fedex-sub-delivery.firebaseapp.com",
+  projectId: "fedex-sub-delivery",
+  storageBucket: "fedex-sub-delivery.firebasestorage.app",
+  messagingSenderId: "778858172310",
+  appId: "1:778858172310:web:1ac4805a322cd2cdf557b7"
+};
 
-function saveDatabase() {
-    localStorage.setItem('fedex_shipments', JSON.stringify(shipments));
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+function initDatabase() {
+    // Listen for real-time updates to shipments
+    db.collection('shipments').onSnapshot(snapshot => {
+        shipments = [];
+        snapshot.forEach(doc => {
+            shipments.push(doc.data());
+        });
+        
+        // Auto-refresh active panels when data changes
+        const activePanel = document.querySelector('.view-panel.active');
+        if (activePanel) {
+            if (activePanel.id === 'manage-portal') {
+                renderManageDashboard();
+                updateDashboardWidgets();
+            } else if (activePanel.id === 'tracking-portal' && currentTrackedNum) {
+                // Ensure we get the latest shipment data for tracking
+                const latestShipment = shipments.find(s => s.trackingNumber.toUpperCase() === currentTrackedNum);
+                if (latestShipment) {
+                    performTrackingSearch(currentTrackedNum);
+                }
+            }
+        }
+    });
 }
 
 // Simple Spa Routing
@@ -265,67 +284,32 @@ function generateBarcodeSVG(text) {
 // Dynamic Mock Shipment Generator for Cross-Device Tracking Verification
 
 
-// Cloud Key-Value Synchronization Helpers (using JSONBlob)
-const CLOUD_URL = 'https://jsonblob.com/api/jsonBlob/019fe447-5087-7315-8ff9-6e953679fa11';
-
+// Firebase Database Helpers
 function saveShipmentToCloud(shipment) {
-    fetch(CLOUD_URL, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify(shipments)
-    })
-    .catch(err => console.error("Cloud DB write failed:", err));
+    if (!shipment || !shipment.trackingNumber) return;
+    db.collection('shipments').doc(shipment.trackingNumber).set(shipment)
+        .catch(err => console.error("Firestore write failed:", err));
+}
+
+function deleteShipmentFromCloud(trackingNum) {
+    db.collection('shipments').doc(trackingNum).delete()
+        .catch(err => console.error("Firestore delete failed:", err));
 }
 
 async function fetchShipmentFromCloud(trackingNum) {
     try {
-        const res = await fetch(CLOUD_URL);
-        if (res.status === 200) {
-            const cloudShipments = await res.json();
-            if (Array.isArray(cloudShipments) && cloudShipments.length > 0) {
-                shipments = cloudShipments;
-                saveDatabase();
-                return shipments.find(s => s.trackingNumber.toUpperCase() === trackingNum.toUpperCase());
-            }
+        const doc = await db.collection('shipments').doc(trackingNum.toUpperCase()).get();
+        if (doc.exists) {
+            return doc.data();
         }
     } catch (e) {
-        console.error("Cloud DB read failed:", e);
+        console.error("Firestore read failed:", e);
     }
     return null;
 }
 
-async function syncAllShipmentsFromCloud() {
-    try {
-        const res = await fetch(CLOUD_URL);
-        if (res.status === 200) {
-            const cloudShipments = await res.json();
-            if (Array.isArray(cloudShipments) && cloudShipments.length > 0) {
-                if (shipments.length > cloudShipments.length) {
-                    saveShipmentToCloud(null); // Push local data if it's more comprehensive
-                } else {
-                    shipments = cloudShipments;
-                    saveDatabase();
-                }
-            } else if (shipments.length > 0) {
-                saveShipmentToCloud(null);
-            }
-            // Auto-refresh active panels
-            const activePanel = document.querySelector('.view-panel.active');
-            if (activePanel) {
-                if (activePanel.id === 'manage-portal') {
-                    renderManageDashboard();
-                    updateDashboardWidgets();
-                } else if (activePanel.id === 'tracking-portal' && currentTrackedNum) {
-                    performTrackingSearch(currentTrackedNum);
-                }
-            }
-        }
-    } catch (e) {
-        console.error("Cloud DB sync failed:", e);
-    }
+function syncAllShipmentsFromCloud() {
+    // Handled by onSnapshot in initDatabase()
 }
 
 // Search Action
@@ -682,8 +666,7 @@ function handleCreateShipment(event) {
         ]
     };
 
-    shipments.unshift(newShipment); // Add to beginning of database
-    saveDatabase();
+    // We don't push to the local array manually anymore, let Firestore listener handle it
     saveShipmentToCloud(newShipment); // Sync to cloud database
     
     showToast("Shipment registered successfully!", "success");
@@ -908,8 +891,6 @@ function handleTransitUpdate(event) {
     }
 
     // Save changes
-    shipments[shipmentIndex] = updatedShipment;
-    saveDatabase();
     saveShipmentToCloud(updatedShipment); // Sync transit updates to cloud
 
     showToast("Package transit checkpoint updated!", "success");
